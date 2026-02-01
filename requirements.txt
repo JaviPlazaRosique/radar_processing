@@ -1,0 +1,2 @@
+google-cloud-firestore==2.23.0
+Faker==40.1.2
