@@ -10,12 +10,12 @@ fake = Faker("es_ES")
 parser = argparse.ArgumentParser(description=('Radar Processing Data Generator.'))
 
 parser.add_argument('--project_id',
-    required = True,
-    help = 'GCP cloud project name.')
+                    required = True,
+                    help = 'GCP cloud project name.')
 
 parser.add_argument('--firestore_collection',
-    required = True,
-    help = 'Firestore collection name.')
+                    required = True, 
+                    help = 'Firestore collection name.')
 
 args, opts = parser.parse_known_args()
 
