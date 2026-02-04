@@ -4,3 +4,8 @@ resource "google_firestore_database" "firestore_db" {
     location_id = "eur3"
     type = "FIRESTORE_NATIVE"
 }
+
+resource "google_pubsub_topic" "pubsub_topic" {
+    name = "radar-topic"
+    project = var.project_id
+}
