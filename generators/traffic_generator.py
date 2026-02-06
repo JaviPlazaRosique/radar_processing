@@ -63,7 +63,9 @@ def main(license_plate_list):
 
     speed = round(random.gauss(110, 20), 2)
 
-    time_in_hours = 5 / speed
+    distance_km = 5
+
+    time_in_hours = distance_km / speed
     time_in_second = int(time_in_hours  * 3600)
 
     entry_time = datetime.now() 
@@ -76,6 +78,8 @@ def main(license_plate_list):
     }
 
     publish_event(**event_start)
+
+    time.sleep(random.randint(1, 10))
 
     event_end = {
         "license_plate": plate,
