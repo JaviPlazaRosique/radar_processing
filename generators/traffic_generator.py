@@ -49,9 +49,11 @@ def publish_event(license_plate, sensor_id, timestamp):
     payload_bytes = json.dumps(payload).encode("utf-8")
 
     try:
-        publisher.publish(topic_path, data=payload_bytes)
+        future = publisher.publish(topic_path, data=payload_bytes)
 
-        logging.info(f"Event published: {payload}")
+        message_id = future.result()
+
+        logging.info(f"Event published: {message_id}")
 
     except Exception as e:
         logging.error(f"Error publishing event: {e}")
