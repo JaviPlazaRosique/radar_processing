@@ -49,9 +49,11 @@ def publish_event(license_plate, sensor_id, timestamp):
     payload_bytes = json.dumps(payload).encode("utf-8")
 
     try:
-        publisher.publish(topic_path, data=payload_bytes)
+        future = publisher.publish(topic_path, data=payload_bytes)
 
-        logging.info(f"Event published: {payload}")
+        message_id = future.result()
+
+        logging.info(f"Event published: {message_id}")
 
     except Exception as e:
         logging.error(f"Error publishing event: {e}")
@@ -61,7 +63,9 @@ def main(license_plate_list):
 
     speed = round(random.gauss(110, 20), 2)
 
-    time_in_hours = 5 / speed
+    distance_km = 5
+
+    time_in_hours = distance_km / speed
     time_in_second = int(time_in_hours  * 3600)
 
     entry_time = datetime.now() 
@@ -74,6 +78,8 @@ def main(license_plate_list):
     }
 
     publish_event(**event_start)
+
+    time.sleep(random.randint(1, 10))
 
     event_end = {
         "license_plate": plate,
