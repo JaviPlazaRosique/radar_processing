@@ -82,15 +82,15 @@ class SpeedLimitViolation(beam.DoFn):
 
         if excess_percentage > 0:
             if speed <= (limit + 30 if limit >= 100 else limit + 20):
-                violation_data.update({'fine_amount': 100, 'points_lost': 0, 'severity': 'Grave'})
+                violation_data.update({'fine_amount': 100, 'points_lost': 0, 'severity': 'Serious'})
             elif excess_percentage < 50:
-                violation_data.update({'fine_amount': 300, 'points_lost': 2, 'severity': 'Grave'})
+                violation_data.update({'fine_amount': 300, 'points_lost': 2, 'severity': 'Serious'})
             elif excess_percentage < 60:
-                violation_data.update({'fine_amount': 400, 'points_lost': 4, 'severity': 'Grave'})
+                violation_data.update({'fine_amount': 400, 'points_lost': 4, 'severity': 'Serious'})
             elif excess_percentage < 70:
-                violation_data.update({'fine_amount': 500, 'points_lost': 6, 'severity': 'Grave'})
+                violation_data.update({'fine_amount': 500, 'points_lost': 6, 'severity': 'Serious'})
             else:
-                violation_data.update({'fine_amount': 600, 'points_lost': 6, 'severity': 'Muy Grave'})
+                violation_data.update({'fine_amount': 600, 'points_lost': 6, 'severity': 'Very Serious'})
 
         yield violation_data
 
@@ -127,7 +127,20 @@ def run():
             | "SpeedLimitViolation" >> beam.ParDo(SpeedLimitViolation())
         )
 
-        Speed | "PrintResults" >> beam.Map(print)
+        Speed | "WriteToBigQuery" >> beam.io.WriteToBigQuery(
+            table = f"{args.project_id}:radar_dataset.speed_violations",
+            schema = 'license_plate:STRING, speed:FLOAT, limit:FLOAT, excess_percentage:FLOAT, fine_amount:FLOAT, points_lost:FLOAT, severity:STRING',
+            write_disposition = beam.io.BigQueryDisposition.WRITE_APPEND,
+            create_disposition=beam.io.BigQueryDisposition.CREATE_IF_NEEDED
+        )
+
+        (
+            Speed
+            | "FormatToPubSub" >> beam.Map(lambda x: json.dumps(x).encode("utf-8"))
+            | "WriteToPubSub" >> beam.io.WriteToPubSub(
+                topic = f"projects/{args.project_id}/topics/driver-notifications-topic"
+            )
+        )
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
