@@ -1,5 +1,5 @@
 import apache_beam as beam
-from apache_beam.options.pipeline_options import PipelineOptions, StandardOptions
+from apache_beam.options.pipeline_options import PipelineOptions, SetupOptions
 from apache_beam.transforms.window import Sessions
 from apache_beam.transforms import trigger
 from datetime import datetime
@@ -95,10 +95,9 @@ class SpeedLimitViolation(beam.DoFn):
         yield violation_data
 
 def run():
-    options = PipelineOptions(pipeline_opts, 
-                              streaming = True, 
-                              project = args.project_id)
-    options.view_as(StandardOptions)
+    options = PipelineOptions(pipeline_opts, streaming=True, project=args.project_id)
+    setup = options.view_as(SetupOptions)
+    setup.save_main_session = True
 
     with beam.Pipeline(argv = pipeline_opts, options = options) as p:
 

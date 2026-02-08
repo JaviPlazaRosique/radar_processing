@@ -31,7 +31,7 @@ def driver_notification(event, context):
     
     driver_document = query_results[0]
     driver_data = driver_document.to_dict()
-    driver_nif = driver_data.id
+    driver_nif = driver_document.id
 
     current_points = driver_data.get("license_points")
 
@@ -116,11 +116,11 @@ def driver_notification(event, context):
         email
         .replace("{{license_plate}}", license_plate)
         .replace("{{driver_name}}", driver_name)
-        .replace("{{fine_amount}}", fine_amount)
-        .replace("{{points_lost}}", points_lost)
-        .replace("{{fine_amount_desc}}", fine_amount_desc)
-        .replace("{{actually_points}}", actually_points)
-        .replace("{{speed}}", speed)
+        .replace("{{fine_amount}}", str(fine_amount))
+        .replace("{{points_lost}}", str(points_lost))
+        .replace("{{fine_amount_desc}}", str(fine_amount_desc))
+        .replace("{{actually_points}}", str(actually_points))
+        .replace("{{speed}}", str(speed))
     )
 
     print(f"--- SENDING EMAIL TO: {driver_email} ---")
