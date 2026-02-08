@@ -1,4 +1,4 @@
-from googl.cloud import firestore
+from google.cloud import firestore
 import json
 import base64
 
@@ -22,7 +22,7 @@ def driver_notification(event, context):
     points_lost = data.get("points_lost")
 
     drivers_ref = firestore_client.collection("drivers")
-    query = firestore_client("license_plate", "==", license_plate).limit(1)
+    query = drivers_ref.where("license_plate", "==", license_plate).limit(1)
     query_results = list(query.stream())
 
     if not query_results:
@@ -31,7 +31,7 @@ def driver_notification(event, context):
     
     driver_document = query_results[0]
     driver_data = driver_document.to_dict()
-    driver_nif = driver_data.get("nif")
+    driver_nif = driver_data.id
 
     current_points = driver_data.get("license_points")
 
@@ -49,7 +49,7 @@ def driver_notification(event, context):
 
         Dear {{driver_name}},
 
-        This is a formal notification regarding a traffic violation recorded against your vehicle. Due to the severity of this infraction and your current point balance, your driving license is now **revoked**.
+        This is a formal notification regarding a traffic violation recorded against your vehicle. Due to the severity of this infraction and your current point balance, your driving license is now revoked.
 
         1. Violation Details and Financial Penalty
 
@@ -108,7 +108,21 @@ def driver_notification(event, context):
         Traffic Administration
         """
 
-    driver_name = f"{driver_data.get("first_name")} {driver_data.get("last_name")}"
+    driver_name = f"{driver_data.get('first_name')} {driver_data.get('last_name')}"
     driver_email = driver_data.get("email")
+    fine_amount_desc = float(fine_amount) * 0.5
 
-    
+    final_email = (
+        email
+        .replace("{{license_plate}}", license_plate)
+        .replace("{{driver_name}}", driver_name)
+        .replace("{{fine_amount}}", fine_amount)
+        .replace("{{points_lost}}", points_lost)
+        .replace("{{fine_amount_desc}}", fine_amount_desc)
+        .replace("{{actually_points}}", actually_points)
+        .replace("{{speed}}", speed)
+    )
+
+    print(f"--- SENDING EMAIL TO: {driver_email} ---")
+    print(final_email)
+    print("------------------------------------------")
