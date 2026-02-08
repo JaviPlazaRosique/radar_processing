@@ -113,3 +113,8 @@ resource "google_cloudfunctions2_function" "send_notification_function" {
         retry_policy = "RETRY_POLICY_DO_NOT_RETRY"
     }
     }
+
+resource "google_storage_bucket" "dataflow_temp_bucket" {
+    name = "dataflow-temp-${var.project_id}"
+    location = var.region
+}
