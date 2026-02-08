@@ -76,3 +76,40 @@ resource "google_pubsub_subscription" "pubsub_subscription_notifications" {
     topic = google_pubsub_topic.pubsub_topic_notifications.name
     project = var.project_id
 }
+
+resource "google_storage_bucket" "bucket_function" {
+    name = "bucket-for-function-${var.project_id}"
+    location = var.region
+}
+
+resource "google_storage_bucket_object" "upload_zip" {
+    name = "function.zip"
+    source = "../function/function.zip"
+    bucket = google_storage_bucket.bucket_function.name
+}
+
+resource "google_cloudfunctions2_function" "send_notification_function" {
+    name = "send-notification-function"
+    location = var.region
+    build_config {
+        runtime = "python310"
+        entry_point = "driver_notification" 
+        source {
+        storage_source {
+            bucket = google_storage_bucket.bucket_function.name
+            object = google_storage_bucket_object.upload_zip.name
+        }
+        }
+    }
+    service_config {
+        max_instance_count = 1
+        available_memory = "256M"
+        timeout_seconds = 60
+    }
+    event_trigger {
+        trigger_region = var.region
+        event_type = "google.cloud.pubsub.topic.v1.messagePublished"
+        pubsub_topic = "projects/${var.project_id}/topics/${google_pubsub_topic.pubsub_topic_notifications.name}"
+        retry_policy = "RETRY_POLICY_DO_NOT_RETRY"
+    }
+    }
