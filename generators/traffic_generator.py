@@ -14,7 +14,8 @@ parser.add_argument('--project_id',
                     help = 'GCP cloud project id.')
 
 parser.add_argument('--firestore_collection',
-                    required = True, 
+                    default = 'drivers',
+                    required = False, 
                     help = 'Firestore collection name.')
 
 parser.add_argument('--traffic_topic',
